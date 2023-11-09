@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc --project tsconfig.json && npm run copy-files",
+    "build": "npx tsc --project tsconfig.json && npm run copy-files",
     "start": "node dist/server.js",
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css dist/",
     "dev": "tsnd --transpile-only --ignore-watch node_modules ./src/server.ts",
