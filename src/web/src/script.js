@@ -4,64 +4,64 @@ const timeout = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 function Game () {
     // Configs 
-    this.serverURL = document.location.href;
+    Game.serverURL = document.location.href;
 
     // Get elements
-    this.coverDiv = document.getElementById("cover");
-    this.scoreboardDiv = document.getElementById("scoreboard");
-    this.opponentBoard = document.getElementById("opponentBoard");
-    this.actionButtons = document.getElementsByClassName("action");
+    Game.coverDiv = document.getElementById("cover");
+    Game.scoreboardDiv = document.getElementById("scoreboard");
+    Game.opponentBoard = document.getElementById("opponentBoard");
+    Game.actionButtons = document.getElementsByClassName("action");
 
     // Set initial state
-    this.playerStatus = PlayerStatus.Idle;
-    this.currentPlayerNumber = null;
+    Game.playerStatus = PlayerStatus.Idle;
+    Game.currentPlayerNumber = null;
 
     // Setup Match
-    this.scoreboard = [0, 0];
+    Game.scoreboard = [0, 0];
 
-    this.init = function () {
-        this.socket = io(this.serverURL);
-        this.socket.on("MatchFound", this.handleMatchFound.bind(this));
-        this.socket.on("WaitingPlay", this.handleWaitingPlay.bind(this));
-        this.socket.on("Result", this.handleResult.bind(this));
-        this.socket.on("TryAgain", this.handleTryAgain.bind(this));
-        this.socket.on("GameOver", this.handleGameOver.bind(this));
-        this.socket.on("OpponentDisconnected", this.handleOpponentDisconnected.bind(this));
+    Game.init = function () {
+        Game.socket = io(Game.serverURL);
+        Game.socket.on("MatchFound", Game.handleMatchFound.bind(this));
+        Game.socket.on("WaitingPlay", Game.handleWaitingPlay.bind(this));
+        Game.socket.on("Result", Game.handleResult.bind(this));
+        Game.socket.on("TryAgain", Game.handleTryAgain.bind(this));
+        Game.socket.on("GameOver", Game.handleGameOver.bind(this));
+        Game.socket.on("OpponentDisconnected", Game.handleOpponentDisconnected.bind(this));
 
-        this.searchRoom();
+        Game.searchRoom();
 
-        for (var i = 0; i < this.actionButtons.length; i++) {
-            this.actionButtons[i].addEventListener('click',  this.sendAction.bind(this), false);
+        for (var i = 0; i < Game.actionButtons.length; i++) {
+            Game.actionButtons[i].addEventListener('click',  Game.sendAction.bind(this), false);
         }
     };
 
-    this.searchRoom = function () {
-        this.showCoverMessage("Searching match...");
-        this.socket.emit("SearchMatch");
+    Game.searchRoom = function () {
+        Game.showCoverMessage("Searching match...");
+        Game.socket.emit("SearchMatch");
     };
 
-    this.handleMatchFound = async function (response) {
-        this.currentPlayerNumber = response.playerNumber;
-        this.scoreboard = [0, 0];
+    Game.handleMatchFound = async function (response) {
+        Game.currentPlayerNumber = response.playerNumber;
+        Game.scoreboard = [0, 0];
 
-        this.showCoverMessage("Match Found");
+        Game.showCoverMessage("Match Found");
         await timeout(1000);
 
-        this.hideCoverMessage();
-        this.updateScoreboard();
-        this.toggleActionButtons(true);
+        Game.hideCoverMessage();
+        Game.updateScoreboard();
+        Game.toggleActionButtons(true);
     };
 
-    this.handleWaitingPlay = function () {
-        this.toggleActionButtons(true);
+    Game.handleWaitingPlay = function () {
+        Game.toggleActionButtons(true);
     };
 
-    this.handleTryAgain = function () {
-        this.socket.emit("Done");
+    Game.handleTryAgain = function () {
+        Game.socket.emit("Done");
     };
 
-    this.handleGameOver = function (response) {
-        this.showCoverMessage(`
+    Game.handleGameOver = function (response) {
+        Game.showCoverMessage(`
             <div>
                 <span class="toGlitch">
                 ${response.won ? "YOU WON" : "YOU LOSE"}
@@ -70,104 +70,104 @@ function Game () {
                 <small>Press anywhere to play again</small>
             </div>
         `);
-        this.addNewGameHandler();
+        Game.addNewGameHandler();
     };
 
-    this.showOpponentMessage = async function (text, fadeOutMs) {
-        this.opponentBoard.classList.remove("active");
+    Game.showOpponentMessage = async function (text, fadeOutMs) {
+        Game.opponentBoard.classList.remove("active");
 
         await timeout(300);
-        this.opponentBoard.innerHTML = text;
-        this.opponentBoard.classList.add("active");
+        Game.opponentBoard.innerHTML = text;
+        Game.opponentBoard.classList.add("active");
 
         if (fadeOutMs && !isNaN(fadeOutMs)) {
             await timeout(fadeOutMs);
-            this.opponentBoard.classList.remove("active");
+            Game.opponentBoard.classList.remove("active");
         }
     };
 
-    this.handleResult = async function (response) {
-        this.scoreboard = response.scoreBoard;
+    Game.handleResult = async function (response) {
+        Game.scoreboard = response.scoreBoard;
 
-        this.showOpponentMessage(response.opponentOption, 3000);
+        Game.showOpponentMessage(response.opponentOption, 3000);
         const resultText = {
             "YouWin": "You Won!",
             "YouLose": "You Lose!",
             "Draw": "Draw"
         };
 
-        this.showMessage(resultText[response.result]);
+        Game.showMessage(resultText[response.result]);
 
         await timeout(3000);
-        this.updateScoreboard();
+        Game.updateScoreboard();
     };
 
-    this.showCoverMessage = function (html) {
-        this.coverDiv.innerHTML = html;
-        this.coverDiv.classList.add("shown");
+    Game.showCoverMessage = function (html) {
+        Game.coverDiv.innerHTML = html;
+        Game.coverDiv.classList.add("shown");
     };
 
-    this.hideCoverMessage = async function () {
-        this.coverDiv.classList.remove("shown");
+    Game.hideCoverMessage = async function () {
+        Game.coverDiv.classList.remove("shown");
         await timeout(500);
-        this.coverDiv.innerHTML = "";
+        Game.coverDiv.innerHTML = "";
     };
 
-    this.updateScoreboard = async function () {
-        this.showMessage(`
+    Game.updateScoreboard = async function () {
+        Game.showMessage(`
             <div>
-                ${this.currentPlayerNumber == 1 ? "You" : "Player1"} <span>${this.scoreboard[0]}</span>
+                ${Game.currentPlayerNumber == 1 ? "You" : "Player1"} <span>${Game.scoreboard[0]}</span>
             </div>
             x
             <div>
-                <span>${this.scoreboard[1]}</span> ${this.currentPlayerNumber == 2 ? "You" : "Player2"}
+                <span>${Game.scoreboard[1]}</span> ${Game.currentPlayerNumber == 2 ? "You" : "Player2"}
             </div>
         `);
     };
 
-    this.toggleActionButtons = function (status) {
-        for (var i = 0; i < this.actionButtons.length; i++) {
-            this.actionButtons[i].disabled = !status;
+    Game.toggleActionButtons = function (status) {
+        for (var i = 0; i < Game.actionButtons.length; i++) {
+            Game.actionButtons[i].disabled = !status;
         }
     };
 
-    this.sendAction = function (e) {
+    Game.sendAction = function (e) {
         console.log("Sent ", e.target.innerText)
-        this.socket.emit("Play", { action: e.target.innerText });
-        this.toggleActionButtons(false);
-        this.showMessage("Waiting opponent");
+        Game.socket.emit("Play", { action: e.target.innerText });
+        Game.toggleActionButtons(false);
+        Game.showMessage("Waiting opponent");
     };
 
-    this.showMessage = async function (html) {
-        this.scoreboardDiv.classList.remove("active");
+    Game.showMessage = async function (html) {
+        Game.scoreboardDiv.classList.remove("active");
 
         await timeout(500);
-        this.scoreboardDiv.innerHTML = html;
-        this.scoreboardDiv.classList.add("active");
+        Game.scoreboardDiv.innerHTML = html;
+        Game.scoreboardDiv.classList.add("active");
     };
 
-    this.handleOpponentDisconnected = async function () {
-        this.showCoverMessage(`
+    Game.handleOpponentDisconnected = async function () {
+        Game.showCoverMessage(`
             <div>
                 <p>Opponent got disconnected.</p> 
                 Press anywhere to play again
             </div>
         `);
 
-        this.addNewGameHandler();
+        Game.addNewGameHandler();
     };
 
-    this.addNewGameHandler = () => {
+    Game.addNewGameHandler = () => {
         const handleNewGame = () => {
-            this.socket.emit("SearchMatch");
-            this.showCoverMessage("Searching match...");
-            this.coverDiv.removeEventListener("click", handleNewGame);
+            Game.socket.emit("SearchMatch");
+            Game.showCoverMessage("Searching match...");
+            Game.coverDiv.removeEventListener("click", handleNewGame);
         };
 
-        this.coverDiv.addEventListener("click", handleNewGame);
+        Game.coverDiv.addEventListener("click", handleNewGame);
     };
 
-    return this.init();
+    return Game.init();
 };
 
 window.addEventListener('load', Game());
