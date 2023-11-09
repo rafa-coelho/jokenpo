@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc --project tsconfig.json && npm run copy-files",
-    "start": "node dist/server.js",
-    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css dist/",
+    "start": "node public/server.js",
+    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css public/",
     "dev": "tsnd --transpile-only --ignore-watch node_modules ./src/server.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
