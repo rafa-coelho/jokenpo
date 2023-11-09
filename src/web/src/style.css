@@ -31,6 +31,10 @@
         max-width: 100%;
         height: 100%;
     }
+
+    .controls {
+        margin-bottom: 3em;
+    }
 }
 
 
@@ -65,7 +69,7 @@
             display: flex;
             align-items: center;
             justify-content: space-around;
-            
+
             &.action {
                 height: 100%;
                 aspect-ratio: 1;
@@ -218,5 +222,18 @@
 
     62% {
         transform: translate(0, 0) skew(5deg);
+    }
+}
+
+footer {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    text-align: center;
+    padding: 1em;
+    & a {
+        text-decoration: none;
+        color: black;
+        font-weight: bold;
     }
 }
