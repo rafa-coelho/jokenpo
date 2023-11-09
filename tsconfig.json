@@ -3,7 +3,7 @@
         "target": "ES2021",
         "module": "commonjs",
         "allowJs": true,
-        "outDir": "./public",
+        "outDir": "./dist",
         "strict": true,
         "strictPropertyInitialization": false,
         "baseUrl": "./",
