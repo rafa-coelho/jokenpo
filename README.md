@@ -29,7 +29,7 @@ With the server running, open your browser on the application url (e.g.: `http:/
 The game requires two browsers connected to start a match
 
 #### Is there a demo? 
-Sure! Here: [Play now](https://jokenpo-eacj.onrender.com/)
+Sure! Here: [Play now](https://jokenpo.racoelho.com.br/)
 
 <hr />
 
