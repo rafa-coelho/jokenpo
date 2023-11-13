@@ -1,37 +1,40 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Jokenpo</title>
-        <link rel="stylesheet" href="src/style.css">
-    </head>
-    <body>
-        <div class="container">
-            <div class="board">
-                <div id="cover" class="">
-                    <div id="middleContent">
-                    </div>
-                </div>
-                <div id="opponentBoard" class="half">opponentOption</div>
-                <div id="scoreboard"></div>
-                <div id="playerBoard" class="half">
-                    <div class="controls">
-                        <button disabled class="action">
-                            Paper
-                        </button>
-                        <button disabled class="action">
-                            Rock
-                        </button>
-                        <button disabled class="action">
-                            Scissors
-                        </button>
-                    </div>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jokenpo</title>
+    <link rel="stylesheet" href="src/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <div class="board">
+            <div id="cover" class="">
+                <div id="middleContent">
                 </div>
             </div>
-            <footer>Made with ❤️ by <a target="_blank" href="https://racoelho.com.br">Rafael Coelho</a></footer>
+            <div id="opponentBoard" class="half">opponentOption</div>
+            <div id="scoreboard"></div>
+            <div id="playerBoard" class="half">
+                <div class="controls">
+                    <button disabled class="action" value="Rock">
+                        Rock
+                    </button>
+                    <button disabled class="action" value="Paper">
+                        Paper
+                    </button>
+                    <button disabled class="action" value="Scissors">
+                        Scissors
+                    </button>
+                </div>
+            </div>
         </div>
-    </body>
+        <footer>Made with ❤️ by <a target="_blank" href="https://racoelho.com.br">Rafael Coelho</a></footer>
+    </div>
+</body>
+
 </html>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/src/script.js"></script>

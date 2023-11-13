@@ -2,6 +2,63 @@
 const PlayerStatus = { Idle: 0, WaitingRoom: 1, Playing: 2 };
 const timeout = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const SocketEvent = {
+    MatchFound: "MatchFound",
+    WaitingPlay: "WaitingPlay",
+    Result: "Result",
+    TryAgain: "TryAgain",
+    GameOver: "GameOver",
+    OpponentDisconnected: "OpponentDisconnected",
+    SearchMatch: "SearchMatch",
+    Done: "Done",
+    Play: "Play",
+    SearchMatch: "SearchMatch"
+};
+
+const translator = {
+    "en-US": {
+        searchingMatch: "Searching match...",
+        matchFound: "Match Found",
+        youWonCapital: "YOU WON",
+        youLoseCapital: "YOU LOSE",
+        youWon: "You Won!",
+        youLose: "You Lose!",
+        draw: "Draw!",
+        pressToPlayAgain: "Press anywhere to play again",
+        you: "You",
+        player1: "Player 1",
+        player2: "Player 2",
+        waitingOpponent: "Waiting opponent",
+        opponentDisconnected: "Opponent got disconnected.",
+        rock: "Rock",
+        paper: "Paper",
+        scissors: "Scissors",
+    },
+    "pt-BR": {
+        searchingMatch: "Procurando partida...",
+        matchFound: "Partida Encontrada",
+        youWonCapital: "VITÓRIA",
+        youLoseCapital: "DERROTA",
+        youWon: "Venceu!",
+        youLose: "Perdeu!",
+        draw: "Empate!",
+        pressToPlayAgain: "Toque em qualquer lugar para jogar novamente",
+        you: "Você",
+        player1: "Jogador 1",
+        player2: "Jogador 2",
+        waitingOpponent: "Esperando Oponente",
+        opponentDisconnected: "Oponente Desconectado.",
+        rock: "Pedra",
+        paper: "Papel",
+        scissors: "Tesoura",
+    },
+};
+
+translator.get = function (translationCode) {
+    return this[window.navigator.language][translationCode] || translationCode;
+};
+
+
 class Game {
     serverURL = document.location.href;
     coverDiv = document.getElementById("cover");
@@ -11,30 +68,31 @@ class Game {
 
     constructor() {
         this.socket = io(this.serverURL);
-        this.socket.on("MatchFound", this.handleMatchFound.bind(this));
-        this.socket.on("WaitingPlay", this.handleWaitingPlay.bind(this));
-        this.socket.on("Result", this.handleResult.bind(this));
-        this.socket.on("TryAgain", this.handleTryAgain.bind(this));
-        this.socket.on("GameOver", this.handleGameOver.bind(this));
-        this.socket.on("OpponentDisconnected", this.handleOpponentDisconnected.bind(this));
+        this.socket.on(SocketEvent.MatchFound, this.handleMatchFound.bind(this));
+        this.socket.on(SocketEvent.WaitingPlay, this.handleWaitingPlay.bind(this));
+        this.socket.on(SocketEvent.Result, this.handleResult.bind(this));
+        this.socket.on(SocketEvent.TryAgain, this.handleTryAgain.bind(this));
+        this.socket.on(SocketEvent.GameOver, this.handleGameOver.bind(this));
+        this.socket.on(SocketEvent.OpponentDisconnected, this.handleOpponentDisconnected.bind(this));
 
         this.searchRoom();
 
         for (var i = 0; i < this.actionButtons.length; i++) {
             this.actionButtons[i].addEventListener('click', this.sendAction.bind(this), false);
+            this.actionButtons[i].innerHTML = translator.get(this.actionButtons[i].value.toLowerCase());
         }
     }
 
     searchRoom () {
-        this.showCoverMessage("Searching match...");
-        this.socket.emit("SearchMatch");
+        this.showCoverMessage(translator.get("searchingMatch"));
+        this.socket.emit(SocketEvent.SearchMatch);
     };
 
     async handleMatchFound (response) {
         this.currentPlayerNumber = response.playerNumber;
         this.scoreboard = [0, 0];
 
-        this.showCoverMessage("Match Found");
+        this.showCoverMessage(translator.get("matchFound"));
         await timeout(1000);
 
         this.hideCoverMessage();
@@ -47,17 +105,17 @@ class Game {
     };
 
     handleTryAgain () {
-        this.socket.emit("Done");
+        this.socket.emit(SocketEvent.Done);
     };
 
     handleGameOver (response) {
         this.showCoverMessage(`
             <div>
                 <span class="toGlitch">
-                ${response.won ? "YOU WON" : "YOU LOSE"}
+                ${response.won ? translator.get("youWonCapital") : translator.get("youLoseCapital")}
                 </span>
                 <br />
-                <small>Press anywhere to play again</small>
+                <small>${translator.get("pressToPlayAgain")}</small>
             </div>
         `);
         this.addNewGameHandler();
@@ -79,11 +137,11 @@ class Game {
     async handleResult (response) {
         this.scoreboard = response.scoreBoard;
 
-        this.showOpponentMessage(response.opponentOption, 3000);
+        this.showOpponentMessage(translator.get(response.opponentOption.toLowerCase()), 3000);
         const resultText = {
-            "YouWin": "You Won!",
-            "YouLose": "You Lose!",
-            "Draw": "Draw"
+            "YouWin": translator.get("youWon"),
+            "YouLose": translator.get("youLose"),
+            "Draw": translator.get("draw"),
         };
 
         this.showMessage(resultText[response.result]);
@@ -106,11 +164,12 @@ class Game {
     async updateScoreboard () {
         this.showMessage(`
             <div>
-                ${this.currentPlayerNumber == 1 ? "You" : "Player1"} <span>${this.scoreboard[0]}</span>
+                ${this.currentPlayerNumber == 1 ? translator.get("you") : translator.get("player1")} <span>${this.scoreboard[0]}</span>
             </div>
             x
             <div>
-                <span>${this.scoreboard[1]}</span> ${this.currentPlayerNumber == 2 ? "You" : "Player2"}
+                <span>${this.scoreboard[1]}</span> 
+                ${this.currentPlayerNumber == 2 ? translator.get("you") : translator.get("player2")}
             </div>
         `);
     };
@@ -122,10 +181,9 @@ class Game {
     };
 
     sendAction (e) {
-        console.log("Sent ", e.target.innerText)
-        this.socket.emit("Play", { action: e.target.innerText });
+        this.socket.emit(SocketEvent.Play, { action: e.target.value });
         this.toggleActionButtons(false);
-        this.showMessage("Waiting opponent");
+        this.showMessage(translator.get("waitingOpponent"));
     };
 
     async showMessage (html) {
@@ -139,8 +197,8 @@ class Game {
     async handleOpponentDisconnected () {
         this.showCoverMessage(`
             <div>
-                <p>Opponent got disconnected.</p> 
-                Press anywhere to play again
+                <p>${translator.get("opponentDisconnected")}</p> 
+                ${translator.get("pressToPlayAgain")}
             </div>
         `);
 
@@ -149,8 +207,8 @@ class Game {
 
     addNewGameHandler () {
         const handleNewGame = () => {
-            this.socket.emit("SearchMatch");
-            this.showCoverMessage("Searching match...");
+            this.socket.emit(SocketEvent.SearchMatch);
+            this.showCoverMessage(translator.get("searchingMatch"));
             this.coverDiv.removeEventListener("click", handleNewGame);
         };
 
